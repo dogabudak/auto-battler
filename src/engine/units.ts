@@ -1,0 +1,88 @@
+import { UnitTemplate } from '../types/index.js';
+
+export const UNIT_TEMPLATES: Record<string, UnitTemplate> = {
+  swordsman: {
+    svgType: 'swordsman',
+    hp: 10,
+    attack: 3,
+    range: 1,
+    attackSpeed: 2,
+  },
+  spearman: {
+    svgType: 'spearman',
+    hp: 10,
+    attack: 2,
+    range: 1,
+    attackSpeed: 2,
+  },
+  knight: {
+    svgType: 'knight',
+    hp: 10,
+    attack: 4,
+    range: 1,
+    attackSpeed: 1,
+  },
+  monster: {
+    svgType: 'monster',
+    hp: 10,
+    attack: 5,
+    range: 1,
+    attackSpeed: 1,
+  },
+  robot: {
+    svgType: 'robot',
+    hp: 10,
+    attack: 3,
+    range: 1,
+    attackSpeed: 3,
+  },
+  jpeg_monster: {
+    imageUrl: 'https://picsum.photos/seed/picsum/64/64',
+    hp: 10,
+    attack: 6,
+    range: 1,
+    attackSpeed: 1,
+  },
+  wizard: {
+    svgType: 'robot',
+    hp: 10,
+    attack: 3,
+    range: 1,
+    attackSpeed: 2,
+  },
+  cleric: {
+    svgType: 'spearman',
+    hp: 10,
+    attack: 1,
+    range: 1,
+    attackSpeed: 2,
+  },
+  pacifist: {
+    svgType: 'swordsman',
+    hp: 10,
+    attack: 0,
+    range: 1,
+    attackSpeed: 1,
+  },
+  archer: {
+    svgType: 'robot',
+    hp: 10,
+    attack: 3,
+    range: 1,
+    attackSpeed: 3,
+  },
+  goblin: {
+    svgType: 'monster',
+    hp: 10,
+    attack: 1,
+    range: 1,
+    attackSpeed: 4,
+  },
+  dummy: {
+    svgType: 'knight',
+    hp: 10,
+    attack: 0,
+    range: 1,
+    attackSpeed: 1,
+  },
+};

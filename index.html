@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto Battler</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; background: #1a1a2e; color: #eee; }
+    #root { width: 100vw; height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+    h1 { margin-bottom: 20px; }
+    .game-container { display: flex; gap: 20px; }
+    .board { position: relative; background: #16213e; border: 2px solid #0f3460; }
+    .unit { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.15s ease; }
+    .unit.player { background: #4ade80; color: #000; }
+    .unit.enemy { background: #f87171; color: #000; }
+    .unit-name { font-size: 10px; font-weight: bold; }
+    .unit-stats { font-size: 9px; }
+    .controls { margin: 20px 0; display: flex; gap: 10px; }
+    button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #4ade80; border: none; border-radius: 5px; }
+    button:disabled { background: #666; cursor: not-allowed; }
+    .unit-pool { display: flex; gap: 10px; margin-bottom: 20px; }
+    .pool-unit { padding: 10px; background: #0f3460; border-radius: 5px; cursor: grab; }
+    .winner { font-size: 24px; margin-top: 20px; color: #fbbf24; }
+    .log { width: 300px; height: 400px; overflow-y: auto; background: #16213e; padding: 10px; font-size: 12px; }
+    .log-entry { margin: 2px 0; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/renderer/main.tsx"></script>
+</body>
+</html>
