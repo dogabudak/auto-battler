@@ -1,12 +1,17 @@
 import { Unit, BoardState, Position, BattleLog, SimulationResult, BOARD_CONFIG } from '../types/index.js';
 
-const MAX_TICKS = 500;
+const MAX_TICKS = 800;
 
-export class BattleSimulator {
+/**
+ * Ball-mode simulator: units are balls that roam the field,
+ * hit a target ONCE, then immediately switch to a different target.
+ */
+export class BallBattleSimulator {
   private units: Map<string, Unit> = new Map();
   private battleLog: BattleLog = [];
   private tick: number = 0;
-  private targetMap: Map<string, string> = new Map(); // unitId -> targetId
+  /** Tracks which target each unit just hit — they must pick someone else next. */
+  private lastHitTarget: Map<string, string> = new Map();
 
   private cloneUnit(unit: Unit): Unit {
     return { ...unit };
@@ -16,16 +21,10 @@ export class BattleSimulator {
     this.units.clear();
     this.battleLog = [];
     this.tick = 0;
-    this.targetMap.clear();
+    this.lastHitTarget.clear();
 
     for (const unit of state.units) {
       this.units.set(unit.id, this.cloneUnit(unit));
-    }
-
-    // Assign each unit a random initial target
-    const ids = Array.from(this.units.keys());
-    for (const id of ids) {
-      this.assignRandomTarget(id);
     }
   }
 
@@ -37,32 +36,33 @@ export class BattleSimulator {
     return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
   }
 
-  private assignRandomTarget(unitId: string): void {
-    const others = this.getAliveUnits().filter(u => u.id !== unitId);
-    if (others.length === 0) {
-      this.targetMap.delete(unitId);
-      return;
-    }
-    const pick = others[Math.floor(Math.random() * others.length)];
-    this.targetMap.set(unitId, pick.id);
-  }
-
   private findTarget(unit: Unit): Unit | null {
-    const currentTargetId = this.targetMap.get(unit.id);
-    if (currentTargetId) {
-      const target = this.units.get(currentTargetId);
-      if (target && target.hp > 0) return target;
+    const lastId = this.lastHitTarget.get(unit.id);
+    const others = this.getAliveUnits().filter(u => u.id !== unit.id);
+    if (others.length === 0) return null;
+
+    // Prefer targets that aren't the last one we hit
+    let candidates = others.filter(u => u.id !== lastId);
+    // If the only target left is the one we just hit, allow it
+    if (candidates.length === 0) candidates = others;
+
+    // Pick the nearest candidate
+    let nearest = candidates[0];
+    let minDist = this.getDistance(unit, nearest);
+
+    for (const other of candidates) {
+      const dist = this.getDistance(unit, other);
+      if (dist < minDist) {
+        minDist = dist;
+        nearest = other;
+      }
     }
-    // Current target is dead or missing — pick a new random one
-    this.assignRandomTarget(unit.id);
-    const newTargetId = this.targetMap.get(unit.id);
-    if (!newTargetId) return null;
-    return this.units.get(newTargetId) ?? null;
+
+    return nearest;
   }
 
   private isInRange(attacker: Unit, target: Unit): boolean {
     const distance = this.getDistance(attacker, target);
-    // Add a small buffer to range to account for continuous space overlapping
     return distance <= attacker.range + 0.5;
   }
 
@@ -72,7 +72,7 @@ export class BattleSimulator {
     const dist = Math.sqrt(dx * dx + dy * dy);
 
     if (dist > 0) {
-      const speed = 0.3; // loose continuous movement speed
+      const speed = 0.45; // faster than original — balls move quickly
       const moveDist = Math.min(speed, dist);
       const newX = unit.x + (dx / dist) * moveDist;
       const newY = unit.y + (dy / dist) * moveDist;
@@ -86,8 +86,8 @@ export class BattleSimulator {
 
   private applySeparation(): void {
     const units = this.getAliveUnits();
-    const SEPARATION_RADIUS = 0.6;
-    const REPULSION_FORCE = 0.3;
+    const SEPARATION_RADIUS = 0.7;
+    const REPULSION_FORCE = 0.35;
 
     for (let i = 0; i < units.length; i++) {
       for (let j = i + 1; j < units.length; j++) {
@@ -96,23 +96,22 @@ export class BattleSimulator {
         const dx = u1.x - u2.x;
         const dy = u1.y - u2.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        
+
         if (dist < SEPARATION_RADIUS && dist > 0) {
           const overlap = SEPARATION_RADIUS - dist;
           const forceX = (dx / dist) * overlap * REPULSION_FORCE;
           const forceY = (dy / dist) * overlap * REPULSION_FORCE;
-          
+
           u1.x += forceX;
           u1.y += forceY;
           u2.x -= forceX;
           u2.y -= forceY;
-          
+
           u1.x = Math.max(0, Math.min(BOARD_CONFIG.width - 1, u1.x));
           u1.y = Math.max(0, Math.min(BOARD_CONFIG.height - 1, u1.y));
           u2.x = Math.max(0, Math.min(BOARD_CONFIG.width - 1, u2.x));
           u2.y = Math.max(0, Math.min(BOARD_CONFIG.height - 1, u2.y));
 
-          // Log the subtle push to keep the renderer in sync if they don't move themselves
           this.logMove(u1, { x: u1.x, y: u1.y });
           this.logMove(u2, { x: u2.x, y: u2.y });
         }
@@ -129,28 +128,30 @@ export class BattleSimulator {
       target.hp = 0;
       this.logDeath(target);
     }
-    attacker.cooldown = 1000 / attacker.attackSpeed;
+
+    // Record that we just hit this target — next tick we'll pick someone else
+    this.lastHitTarget.set(attacker.id, target.id);
+
+    // Short cooldown so there's a brief pause before chasing next target
+    attacker.cooldown = 600 / attacker.attackSpeed;
   }
 
   private processUnit(unit: Unit, hitThisTick: Set<string>): void {
     if (unit.hp <= 0) return;
-
-    if (unit.cooldown > 0) {
-      return;
-    }
+    if (unit.cooldown > 0) return;
 
     const target = this.findTarget(unit);
     if (!target) return;
 
     if (this.isInRange(unit, target)) {
-      if (hitThisTick.has(target.id)) return; // only one hit per target per tick
+      if (hitThisTick.has(target.id)) return;
       hitThisTick.add(target.id);
       this.attack(unit, target);
     } else {
       this.moveTowards(unit, target);
     }
   }
-  
+
   private log(event: any) {
     this.battleLog.push({ tick: this.tick, ...event });
   }
@@ -160,7 +161,7 @@ export class BattleSimulator {
   }
 
   private logAttack(attacker: Unit, target: Unit, damage: number) {
-    this.log({ type: 'attack', attackerId: attacker.id, targetId: target.id, damage: damage });
+    this.log({ type: 'attack', attackerId: attacker.id, targetId: target.id, damage });
   }
 
   private logDeath(unit: Unit) {
@@ -169,13 +170,8 @@ export class BattleSimulator {
 
   private checkWinner(): string | 'draw' | null {
     const aliveUnits = this.getAliveUnits();
-
-    if (aliveUnits.length === 1) {
-      return aliveUnits[0].id;
-    }
-    if (aliveUnits.length === 0) {
-      return 'draw';
-    }
+    if (aliveUnits.length === 1) return aliveUnits[0].id;
+    if (aliveUnits.length === 0) return 'draw';
     return null;
   }
 
@@ -193,8 +189,8 @@ export class BattleSimulator {
       const allUnits = this.getAliveUnits();
 
       for (const unit of allUnits) {
-        if(unit.cooldown > 0) {
-            unit.cooldown -= timeStep;
+        if (unit.cooldown > 0) {
+          unit.cooldown -= timeStep;
         }
       }
 
@@ -210,11 +206,6 @@ export class BattleSimulator {
 
     const alive = this.getAliveUnits();
     if (alive.length === 1) return { winner: alive[0].id, battleLog: this.battleLog };
-
     return { winner: 'draw', battleLog: this.battleLog };
-  }
-
-  public getBattleLog(): BattleLog {
-    return this.battleLog;
   }
 }

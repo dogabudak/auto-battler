@@ -5,6 +5,11 @@ export interface Position {
 
 export type SvgType = 'swordsman' | 'spearman' | 'knight' | 'monster' | 'robot';
 
+export interface SpritePosition {
+  col: number;
+  row: number;
+}
+
 export interface Unit {
   id: string;
   x: number;
@@ -17,11 +22,13 @@ export interface Unit {
   cooldown: number;
   svgType?: SvgType;
   imageUrl?: string;
+  sprite?: SpritePosition;
 }
 
 export interface UnitTemplate {
   svgType?: SvgType;
   imageUrl?: string;
+  sprite?: SpritePosition;
   hp: number;
   attack: number;
   range: number;
@@ -73,6 +80,16 @@ export interface DamageNumber {
   id: string;
   x: number;
   y: number;
+  damage: number;
+  startTime: number;
+}
+
+export interface AttackLine {
+  id: string;
+  fromX: number;
+  fromY: number;
+  toX: number;
+  toY: number;
   damage: number;
   startTime: number;
 }

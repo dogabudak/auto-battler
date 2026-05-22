@@ -13,14 +13,10 @@ export const createUnit = (
 ): Unit => {
   const template = UNIT_TEMPLATES[templateName];
   return {
-    id: generateUnitId(),
+    id: String(templateName),
     x,
     y,
-    hp: template.hp,
     maxHp: template.hp,
-    attack: template.attack,
-    range: template.range,
-    attackSpeed: template.attackSpeed,
     cooldown: 0,
     ...template,
   };

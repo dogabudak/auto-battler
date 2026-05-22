@@ -1,22 +1,63 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { BoardState, Unit, BattleLog, Position, BOARD_CONFIG, SvgType, UnitAnimState, SlashEffect, DamageNumber, AttackLine } from '../types/index.js';
-import { runSimulation, createUnit, UNIT_TEMPLATES } from '../engine/index.js';
-import { UnitSvg } from './UnitSvgs.js';
+import { BoardState, Unit, BattleLog, Position, BOARD_CONFIG, UnitAnimState, SlashEffect, DamageNumber, AttackLine } from '../types/index.js';
+import { BallBattleSimulator, createUnit, UNIT_TEMPLATES } from '../engine/index.js';
 
-const UnitImage: React.FC<{ unit: Unit; size: number }> = ({ unit, size }) => {
-  if (unit.imageUrl) {
-    return <img src={unit.imageUrl} alt={unit.id} width={size} height={size} style={{ objectFit: 'contain' }} />;
-  }
-  if (unit.svgType) {
-    return <UnitSvg svgType={unit.svgType} size={size} />;
-  }
-  return null;
+const UNIT_DISPLAY_NAMES: Record<string, string> = {
+  arsenal: 'Arsenal',
+  aston_villa: 'Aston Villa',
+  bournemouth: 'Bournemouth',
+  brentford: 'Brentford',
+  brighton: 'Brighton',
+  chelsea: 'Chelsea',
+  crystal_palace: 'Crystal Palace',
+  everton: 'Everton',
+  fulham: 'Fulham',
+  ipswich: 'Ipswich',
+  leicester: 'Leicester',
+  liverpool: 'Liverpool',
+  man_city: 'Man City',
+  man_united: 'Man Utd',
+  newcastle: 'Newcastle',
+  nott_forest: "Nott'm Forest",
+  southampton: 'Southampton',
+  tottenham: 'Tottenham',
+  west_ham: 'West Ham',
+  wolves: 'Wolves',
+};
+
+/** Ball-shaped unit with 3D sphere effect and PL crest inside */
+const BallUnit: React.FC<{ unit: Unit; size: number }> = ({ unit, size }) => {
+  if (!unit.imageUrl) return null;
+  const crestSize = size * 0.6;
+
+  return (
+    <div
+      style={{
+        width: size,
+        height: size,
+        borderRadius: '50%',
+        background: 'radial-gradient(circle at 35% 30%, #ffffff 0%, #e0e0e0 30%, #aaaaaa 70%, #666666 100%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.5), inset 0 -2px 6px rgba(0,0,0,0.2)',
+      }}
+    >
+      <img
+        src={unit.imageUrl}
+        alt={unit.id}
+        width={crestSize}
+        height={crestSize}
+        style={{ objectFit: 'contain', pointerEvents: 'none' }}
+      />
+    </div>
+  );
 };
 
 const TILE_SIZE = 50;
 const BOARD_WIDTH = BOARD_CONFIG.width * TILE_SIZE;
 const BOARD_HEIGHT = BOARD_CONFIG.height * TILE_SIZE;
-const TICK_INTERVAL = 400; // ms per tick — slower for readability
+const TICK_INTERVAL = 400;
 
 const TEMPLATE_KEYS = Object.keys(UNIT_TEMPLATES) as (keyof typeof UNIT_TEMPLATES)[];
 
@@ -39,7 +80,7 @@ function distributedPositions(count: number): Position[] {
   return positions;
 }
 
-export function App() {
+export function BallApp({ onBack }: { onBack: () => void }) {
   const [units, setUnits] = useState<Unit[]>([]);
   const [isBattling, setIsBattling] = useState(false);
   const [winner, setWinner] = useState<string | 'draw' | null>(null);
@@ -50,7 +91,7 @@ export function App() {
   const [currentTick, setCurrentTick] = useState(0);
   const [maxTick, setMaxTick] = useState(0);
   const animTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const allUnitsRef = useRef<Unit[]>([]);
+  const unitMapRef = useRef<Map<string, Unit>>(new Map());
 
   const initializeUnits = useCallback(() => {
     const positions = distributedPositions(TEMPLATE_KEYS.length);
@@ -59,7 +100,9 @@ export function App() {
     ).filter(Boolean);
 
     setUnits(newUnits);
-    allUnitsRef.current = newUnits;
+    const map = new Map<string, Unit>();
+    newUnits.forEach(u => map.set(u.id, u));
+    unitMapRef.current = map;
 
     const states = new Map<string, UnitAnimState>();
     newUnits.forEach(u => {
@@ -127,9 +170,8 @@ export function App() {
               next.set(event.attackerId, { ...attackerState, attacking: true, attackDir: dir });
               next.set(event.targetId, { ...targetState, hp: targetState.hp - event.damage });
 
-              const slashId = `slash-${tick}-${event.targetId}`;
               setSlashes(prevSlashes => [...prevSlashes, {
-                id: slashId,
+                id: `slash-${tick}-${event.targetId}`,
                 x: targetState.x,
                 y: targetState.y,
                 startTime: Date.now(),
@@ -179,7 +221,8 @@ export function App() {
       units: units.map(u => ({ ...u })),
     };
 
-    const result = runSimulation(boardState);
+    const simulator = new BallBattleSimulator();
+    const result = simulator.runSimulation(boardState);
     setIsBattling(true);
     setWinner(null);
     setCurrentTick(0);
@@ -218,21 +261,67 @@ export function App() {
     initializeUnits();
   };
 
+  /** Resolve a unit ID (like "unit_3") to a display name (like "Liverpool") */
+  const getDisplayName = (unitId: string): string => {
+    const unit = unitMapRef.current.get(unitId);
+    if (!unit) return unitId;
+    for (const [key, tmpl] of Object.entries(UNIT_TEMPLATES)) {
+      if (unit.imageUrl && unit.imageUrl === tmpl.imageUrl) {
+        return UNIT_DISPLAY_NAMES[key] || key;
+      }
+    }
+    return unitId;
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, minHeight: '100vh' }}>
-      <h1 style={{ fontSize: 32, marginBottom: 8, letterSpacing: 2 }}>FFA BATTLE SIMULATOR</h1>
-      <p style={{ color: '#888', marginBottom: 20, fontSize: 14 }}>Last unit standing wins</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 8 }}>
+        <button
+          onClick={onBack}
+          style={{
+            padding: '6px 16px', fontSize: 14, background: 'transparent',
+            border: '1px solid #555', borderRadius: 6, cursor: 'pointer',
+            color: '#aaa', letterSpacing: 1,
+          }}
+        >
+          BACK
+        </button>
+        <h1 style={{ fontSize: 32, letterSpacing: 2 }}>PREMIER LEAGUE BRAWL</h1>
+      </div>
+      <p style={{ color: '#888', marginBottom: 20, fontSize: 14 }}>
+        Hit once, move on — last club standing wins
+      </p>
 
+      {/* Pitch */}
       <div style={{
         position: 'relative',
         width: BOARD_WIDTH,
         height: BOARD_HEIGHT,
-        background: '#1a1f2e',
-        border: '2px solid #2a3040',
-        borderRadius: 8,
+        background: 'linear-gradient(180deg, #2d5a27 0%, #3a7a32 50%, #2d5a27 100%)',
+        border: '3px solid #fff3',
+        borderRadius: 10,
         overflow: 'hidden',
       }}>
-        {/* Attack lines — drawn first so they appear behind units */}
+        {/* Field lines */}
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          borderLeft: '2px solid #fff2', borderRight: '2px solid #fff2',
+        }}>
+          {/* Center line */}
+          <div style={{
+            position: 'absolute', left: 0, right: 0, top: '50%',
+            borderTop: '2px solid #fff2',
+          }} />
+          {/* Center circle */}
+          <div style={{
+            position: 'absolute', left: '50%', top: '50%',
+            width: 140, height: 140,
+            transform: 'translate(-50%, -50%)',
+            border: '2px solid #fff2', borderRadius: '50%',
+          }} />
+        </div>
+
+        {/* Attack lines */}
         <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 5 }}>
           {attackLines.map(line => {
             const color = line.damage === 0 ? '#888888' : line.damage >= 3 ? '#ff4444' : '#ffaa44';
@@ -256,12 +345,9 @@ export function App() {
           const state = unitStates.get(unit.id);
           if (!state) return null;
 
-          let lungeOffset = state.attacking ? (state.attackDir * TILE_SIZE * 0.2) : 0;
-          if (state.x <= 0 && lungeOffset < 0) lungeOffset = 0;
-          if (state.x >= BOARD_CONFIG.width - 1 && lungeOffset > 0) lungeOffset = 0;
-
+          const bounceScale = state.attacking ? 1.2 : 1;
           const hpRatio = state.hp / state.maxHp;
-          const displayName = unit.id.replace(/_/g, ' ');
+          const displayName = UNIT_DISPLAY_NAMES[unit.id] || unit.id.replace(/_/g, ' ');
 
           return (
             <div
@@ -272,11 +358,11 @@ export function App() {
                 top: state.y * TILE_SIZE,
                 width: TILE_SIZE,
                 height: TILE_SIZE,
-                transform: `translateX(${lungeOffset}px) ${!state.alive ? 'scale(0.3) rotate(45deg)' : ''}`,
+                transform: `scale(${bounceScale}) ${!state.alive ? 'scale(0.3) rotate(45deg)' : ''}`,
                 opacity: state.alive ? 1 : 0,
                 transitionProperty: 'left, top, transform, opacity',
                 transitionDuration: '0.35s, 0.35s, 0.25s, 0.8s',
-                transitionTimingFunction: 'ease-out, ease-out, ease, ease',
+                transitionTimingFunction: 'ease-out, ease-out, ease-out, ease',
                 zIndex: state.attacking ? 20 : 10,
                 display: 'flex',
                 flexDirection: 'column',
@@ -292,7 +378,7 @@ export function App() {
                 whiteSpace: 'nowrap',
                 fontSize: 8,
                 fontWeight: 'bold',
-                color: '#ccc',
+                color: '#fff',
                 textTransform: 'uppercase',
                 letterSpacing: 0.5,
                 textShadow: '0 0 3px #000, 0 1px 2px #000',
@@ -300,25 +386,24 @@ export function App() {
                 {displayName}
               </div>
 
-              {/* Unit image with attack flash */}
+              {/* Ball with attack glow */}
               <div style={{
                 filter: state.attacking ? 'brightness(1.4) drop-shadow(0 0 6px #ff8800)' : undefined,
                 transition: 'filter 0.15s',
               }}>
-                <UnitImage unit={unit} size={TILE_SIZE * 0.7} />
+                <BallUnit unit={unit} size={TILE_SIZE * 0.85} />
               </div>
 
               {/* HP bar */}
               <div style={{
                 position: 'absolute',
-                bottom: 2,
+                bottom: 0,
                 left: '10%',
                 width: '80%',
-                height: 5,
-                background: '#222',
+                height: 4,
+                background: '#0005',
                 borderRadius: 3,
                 overflow: 'hidden',
-                border: '1px solid #444',
               }}>
                 <div style={{
                   width: `${hpRatio * 100}%`,
@@ -333,7 +418,7 @@ export function App() {
           );
         })}
 
-        {/* Slash effects at the target */}
+        {/* Slash effects */}
         {slashes.map(slash => (
           <div
             key={slash.id}
@@ -377,19 +462,31 @@ export function App() {
 
       <div style={{ margin: 20, display: 'flex', gap: 10, alignItems: 'center' }}>
         {!isBattling ? (
-          <button onClick={startBattle} style={{ padding: '12px 40px', fontSize: 18, fontWeight: 'bold', background: 'linear-gradient(135deg, #4ade80, #22c55e)', border: 'none', borderRadius: 8, cursor: 'pointer', color: '#000', letterSpacing: 1 }}>
-            START BATTLE
+          <button onClick={startBattle} style={{
+            padding: '12px 40px', fontSize: 18, fontWeight: 'bold',
+            background: 'linear-gradient(135deg, #4ade80, #22c55e)',
+            border: 'none', borderRadius: 8, cursor: 'pointer', color: '#000', letterSpacing: 1,
+          }}>
+            KICK OFF
           </button>
         ) : (
-          <button onClick={reset} style={{ padding: '12px 40px', fontSize: 18, fontWeight: 'bold', background: 'linear-gradient(135deg, #666, #444)', border: 'none', borderRadius: 8, cursor: 'pointer', color: '#fff', letterSpacing: 1 }}>
+          <button onClick={reset} style={{
+            padding: '12px 40px', fontSize: 18, fontWeight: 'bold',
+            background: 'linear-gradient(135deg, #666, #444)',
+            border: 'none', borderRadius: 8, cursor: 'pointer', color: '#fff', letterSpacing: 1,
+          }}>
             RESET
           </button>
         )}
       </div>
 
       {winner && (
-        <div style={{ fontSize: 36, fontWeight: 'bold', color: '#fbbf24', textShadow: `0 0 20px #fbbf24`, animation: 'pulse 1s ease-in-out infinite', marginTop: 10 }}>
-          {winner === 'draw' ? 'DRAW!' : `WINNER: ${winner}`}
+        <div style={{
+          fontSize: 36, fontWeight: 'bold', color: '#fbbf24',
+          textShadow: '0 0 20px #fbbf24',
+          animation: 'pulse 1s ease-in-out infinite', marginTop: 10,
+        }}>
+          {winner === 'draw' ? 'DRAW!' : `WINNER: ${getDisplayName(winner)}`}
         </div>
       )}
 

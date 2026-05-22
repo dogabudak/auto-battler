@@ -7,5 +7,6 @@ export const runSimulation = (boardState: BoardState): SimulationResult => {
 };
 
 export { BattleSimulator } from './simulator.js';
+export { BallBattleSimulator } from './ballSimulator.js';
 export { createUnit, generateUnitId } from './unitFactory.js';
 export { UNIT_TEMPLATES } from './units.js';
