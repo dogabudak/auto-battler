@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { BoardState, Unit, BattleLog, Position, BOARD_CONFIG, UnitAnimState, SlashEffect, DamageNumber, AttackLine } from '../types/index.js';
 import { BallBattleSimulator, createUnit, UNIT_TEMPLATES } from '../engine/index.js';
+import { useScreenRecorder } from './useScreenRecorder.js';
 
 const UNIT_DISPLAY_NAMES: Record<string, string> = {
   arsenal: 'Arsenal',
@@ -92,6 +93,8 @@ export function BallApp({ onBack }: { onBack: () => void }) {
   const [maxTick, setMaxTick] = useState(0);
   const animTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const unitMapRef = useRef<Map<string, Unit>>(new Map());
+
+  const { isRecording, startRecording, stopRecording } = useScreenRecorder('pl-brawl');
 
   const initializeUnits = useCallback(() => {
     const positions = distributedPositions(TEMPLATE_KEYS.length);
@@ -476,6 +479,24 @@ export function BallApp({ onBack }: { onBack: () => void }) {
             border: 'none', borderRadius: 8, cursor: 'pointer', color: '#fff', letterSpacing: 1,
           }}>
             RESET
+          </button>
+        )}
+
+        {!isRecording ? (
+          <button onClick={startRecording} style={{
+            padding: '12px 24px', fontSize: 16, fontWeight: 'bold',
+            background: 'linear-gradient(135deg, #f87171, #ef4444)',
+            border: 'none', borderRadius: 8, cursor: 'pointer', color: '#fff', letterSpacing: 1,
+          }}>
+            ● REC
+          </button>
+        ) : (
+          <button onClick={stopRecording} style={{
+            padding: '12px 24px', fontSize: 16, fontWeight: 'bold',
+            background: 'linear-gradient(135deg, #1f2937, #111827)',
+            border: '2px solid #ef4444', borderRadius: 8, cursor: 'pointer', color: '#fff', letterSpacing: 1,
+          }}>
+            ■ STOP & SAVE
           </button>
         )}
       </div>

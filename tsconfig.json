@@ -13,7 +13,8 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "moduleResolution": "NodeNext"
+    "moduleResolution": "NodeNext",
+    "resolveJsonModule": true
   },
   "include": ["src/**/*", "src/engine/test-engine.ts"],
   "exclude": ["node_modules", "dist"]

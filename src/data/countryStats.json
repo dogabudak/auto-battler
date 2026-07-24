@@ -1,0 +1,655 @@
+{
+  "metadata": {
+    "description": "Raw country data for stat calculations",
+    "sources": {
+      "gdp": "World Bank 2024 (nominal, billions USD)",
+      "military": "SIPRI 2024 (billions USD)",
+      "population": "UN 2024 (millions)",
+      "area": "km² (for density calculation)",
+      "nuclear": "Known nuclear powers"
+    },
+    "lastUpdated": "2024"
+  },
+  "countries": {
+    "usa": {
+      "name": "United States",
+      "code": "US",
+      "gdp": 27360,
+      "military": 916,
+      "population": 334,
+      "area": 9833520,
+      "nuclear": true,
+      "continent": "North America"
+    },
+    "china": {
+      "name": "China",
+      "code": "CN",
+      "gdp": 17795,
+      "military": 296,
+      "population": 1412,
+      "area": 9596960,
+      "nuclear": true,
+      "continent": "Asia"
+    },
+    "germany": {
+      "name": "Germany",
+      "code": "DE",
+      "gdp": 4430,
+      "military": 66,
+      "population": 84,
+      "area": 357022,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "japan": {
+      "name": "Japan",
+      "code": "JP",
+      "gdp": 4231,
+      "military": 50,
+      "population": 124,
+      "area": 377975,
+      "nuclear": false,
+      "continent": "Asia"
+    },
+    "india": {
+      "name": "India",
+      "code": "IN",
+      "gdp": 3730,
+      "military": 83,
+      "population": 1428,
+      "area": 3287263,
+      "nuclear": true,
+      "continent": "Asia"
+    },
+    "uk": {
+      "name": "United Kingdom",
+      "code": "GB",
+      "gdp": 3340,
+      "military": 75,
+      "population": 67,
+      "area": 242495,
+      "nuclear": true,
+      "continent": "Europe"
+    },
+    "france": {
+      "name": "France",
+      "code": "FR",
+      "gdp": 3050,
+      "military": 61,
+      "population": 68,
+      "area": 643801,
+      "nuclear": true,
+      "continent": "Europe"
+    },
+    "italy": {
+      "name": "Italy",
+      "code": "IT",
+      "gdp": 2255,
+      "military": 35,
+      "population": 59,
+      "area": 301340,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "brazil": {
+      "name": "Brazil",
+      "code": "BR",
+      "gdp": 2170,
+      "military": 22,
+      "population": 216,
+      "area": 8515767,
+      "nuclear": false,
+      "continent": "South America"
+    },
+    "canada": {
+      "name": "Canada",
+      "code": "CA",
+      "gdp": 2140,
+      "military": 27,
+      "population": 40,
+      "area": 9984670,
+      "nuclear": false,
+      "continent": "North America"
+    },
+    "russia": {
+      "name": "Russia",
+      "code": "RU",
+      "gdp": 2020,
+      "military": 109,
+      "population": 144,
+      "area": 17098242,
+      "nuclear": true,
+      "continent": "Europe"
+    },
+    "south_korea": {
+      "name": "South Korea",
+      "code": "KR",
+      "gdp": 1710,
+      "military": 47,
+      "population": 52,
+      "area": 100210,
+      "nuclear": false,
+      "continent": "Asia"
+    },
+    "australia": {
+      "name": "Australia",
+      "code": "AU",
+      "gdp": 1690,
+      "military": 32,
+      "population": 26,
+      "area": 7692024,
+      "nuclear": false,
+      "continent": "Oceania"
+    },
+    "mexico": {
+      "name": "Mexico",
+      "code": "MX",
+      "gdp": 1470,
+      "military": 8,
+      "population": 129,
+      "area": 1964375,
+      "nuclear": false,
+      "continent": "North America"
+    },
+    "spain": {
+      "name": "Spain",
+      "code": "ES",
+      "gdp": 1580,
+      "military": 20,
+      "population": 48,
+      "area": 505990,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "indonesia": {
+      "name": "Indonesia",
+      "code": "ID",
+      "gdp": 1390,
+      "military": 25,
+      "population": 277,
+      "area": 1904569,
+      "nuclear": false,
+      "continent": "Asia"
+    },
+    "netherlands": {
+      "name": "Netherlands",
+      "code": "NL",
+      "gdp": 1090,
+      "military": 15,
+      "population": 18,
+      "area": 41543,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "saudi_arabia": {
+      "name": "Saudi Arabia",
+      "code": "SA",
+      "gdp": 1060,
+      "military": 75,
+      "population": 36,
+      "area": 2149690,
+      "nuclear": false,
+      "continent": "Asia"
+    },
+    "turkey": {
+      "name": "Turkey",
+      "code": "TR",
+      "gdp": 1020,
+      "military": 19,
+      "population": 85,
+      "area": 783562,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "switzerland": {
+      "name": "Switzerland",
+      "code": "CH",
+      "gdp": 905,
+      "military": 6,
+      "population": 9,
+      "area": 41284,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "poland": {
+      "name": "Poland",
+      "code": "PL",
+      "gdp": 811,
+      "military": 32,
+      "population": 38,
+      "area": 312696,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "argentina": {
+      "name": "Argentina",
+      "code": "AR",
+      "gdp": 640,
+      "military": 5,
+      "population": 46,
+      "area": 2780400,
+      "nuclear": false,
+      "continent": "South America"
+    },
+    "sweden": {
+      "name": "Sweden",
+      "code": "SE",
+      "gdp": 593,
+      "military": 9,
+      "population": 10,
+      "area": 450295,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "belgium": {
+      "name": "Belgium",
+      "code": "BE",
+      "gdp": 624,
+      "military": 7,
+      "population": 12,
+      "area": 30528,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "ireland": {
+      "name": "Ireland",
+      "code": "IE",
+      "gdp": 545,
+      "military": 1,
+      "population": 5,
+      "area": 70273,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "israel": {
+      "name": "Israel",
+      "code": "IL",
+      "gdp": 525,
+      "military": 24,
+      "population": 10,
+      "area": 20770,
+      "nuclear": true,
+      "continent": "Asia"
+    },
+    "norway": {
+      "name": "Norway",
+      "code": "NO",
+      "gdp": 485,
+      "military": 9,
+      "population": 5,
+      "area": 323802,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "austria": {
+      "name": "Austria",
+      "code": "AT",
+      "gdp": 516,
+      "military": 4,
+      "population": 9,
+      "area": 83871,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "uae": {
+      "name": "UAE",
+      "code": "AE",
+      "gdp": 509,
+      "military": 23,
+      "population": 10,
+      "area": 83600,
+      "nuclear": false,
+      "continent": "Asia"
+    },
+    "thailand": {
+      "name": "Thailand",
+      "code": "TH",
+      "gdp": 514,
+      "military": 8,
+      "population": 72,
+      "area": 513120,
+      "nuclear": false,
+      "continent": "Asia"
+    },
+    "singapore": {
+      "name": "Singapore",
+      "code": "SG",
+      "gdp": 501,
+      "military": 12,
+      "population": 6,
+      "area": 733,
+      "nuclear": false,
+      "continent": "Asia"
+    },
+    "nigeria": {
+      "name": "Nigeria",
+      "code": "NG",
+      "gdp": 472,
+      "military": 3,
+      "population": 224,
+      "area": 923768,
+      "nuclear": false,
+      "continent": "Africa"
+    },
+    "south_africa": {
+      "name": "South Africa",
+      "code": "ZA",
+      "gdp": 399,
+      "military": 3,
+      "population": 60,
+      "area": 1221037,
+      "nuclear": false,
+      "continent": "Africa"
+    },
+    "egypt": {
+      "name": "Egypt",
+      "code": "EG",
+      "gdp": 387,
+      "military": 5,
+      "population": 105,
+      "area": 1002450,
+      "nuclear": false,
+      "continent": "Africa"
+    },
+    "denmark": {
+      "name": "Denmark",
+      "code": "DK",
+      "gdp": 400,
+      "military": 6,
+      "population": 6,
+      "area": 42933,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "philippines": {
+      "name": "Philippines",
+      "code": "PH",
+      "gdp": 435,
+      "military": 5,
+      "population": 117,
+      "area": 300000,
+      "nuclear": false,
+      "continent": "Asia"
+    },
+    "pakistan": {
+      "name": "Pakistan",
+      "code": "PK",
+      "gdp": 340,
+      "military": 10,
+      "population": 240,
+      "area": 881913,
+      "nuclear": true,
+      "continent": "Asia"
+    },
+    "vietnam": {
+      "name": "Vietnam",
+      "code": "VN",
+      "gdp": 433,
+      "military": 8,
+      "population": 100,
+      "area": 331212,
+      "nuclear": false,
+      "continent": "Asia"
+    },
+    "portugal": {
+      "name": "Portugal",
+      "code": "PT",
+      "gdp": 287,
+      "military": 4,
+      "population": 10,
+      "area": 92212,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "czech_republic": {
+      "name": "Czech Republic",
+      "code": "CZ",
+      "gdp": 330,
+      "military": 5,
+      "population": 11,
+      "area": 78865,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "greece": {
+      "name": "Greece",
+      "code": "GR",
+      "gdp": 239,
+      "military": 9,
+      "population": 10,
+      "area": 131957,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "finland": {
+      "name": "Finland",
+      "code": "FI",
+      "gdp": 300,
+      "military": 6,
+      "population": 6,
+      "area": 338424,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "romania": {
+      "name": "Romania",
+      "code": "RO",
+      "gdp": 351,
+      "military": 5,
+      "population": 19,
+      "area": 238391,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "colombia": {
+      "name": "Colombia",
+      "code": "CO",
+      "gdp": 363,
+      "military": 10,
+      "population": 52,
+      "area": 1141748,
+      "nuclear": false,
+      "continent": "South America"
+    },
+    "new_zealand": {
+      "name": "New Zealand",
+      "code": "NZ",
+      "gdp": 252,
+      "military": 3,
+      "population": 5,
+      "area": 268021,
+      "nuclear": false,
+      "continent": "Oceania"
+    },
+    "chile": {
+      "name": "Chile",
+      "code": "CL",
+      "gdp": 335,
+      "military": 6,
+      "population": 20,
+      "area": 756102,
+      "nuclear": false,
+      "continent": "South America"
+    },
+    "ukraine": {
+      "name": "Ukraine",
+      "code": "UA",
+      "gdp": 178,
+      "military": 42,
+      "population": 37,
+      "area": 603550,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "iran": {
+      "name": "Iran",
+      "code": "IR",
+      "gdp": 402,
+      "military": 10,
+      "population": 89,
+      "area": 1648195,
+      "nuclear": false,
+      "continent": "Asia"
+    },
+    "north_korea": {
+      "name": "North Korea",
+      "code": "KP",
+      "gdp": 18,
+      "military": 4,
+      "population": 26,
+      "area": 120538,
+      "nuclear": true,
+      "continent": "Asia"
+    },
+    "malaysia": {
+      "name": "Malaysia",
+      "code": "MY",
+      "gdp": 430,
+      "military": 5,
+      "population": 34,
+      "area": 330803,
+      "nuclear": false,
+      "continent": "Asia"
+    },
+    "peru": {
+      "name": "Peru",
+      "code": "PE",
+      "gdp": 268,
+      "military": 3,
+      "population": 34,
+      "area": 1285216,
+      "nuclear": false,
+      "continent": "South America"
+    },
+    "hungary": {
+      "name": "Hungary",
+      "code": "HU",
+      "gdp": 212,
+      "military": 3,
+      "population": 10,
+      "area": 93028,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "qatar": {
+      "name": "Qatar",
+      "code": "QA",
+      "gdp": 235,
+      "military": 15,
+      "population": 3,
+      "area": 11586,
+      "nuclear": false,
+      "continent": "Asia"
+    },
+    "kuwait": {
+      "name": "Kuwait",
+      "code": "KW",
+      "gdp": 165,
+      "military": 8,
+      "population": 4,
+      "area": 17818,
+      "nuclear": false,
+      "continent": "Asia"
+    },
+    "morocco": {
+      "name": "Morocco",
+      "code": "MA",
+      "gdp": 141,
+      "military": 5,
+      "population": 37,
+      "area": 446550,
+      "nuclear": false,
+      "continent": "Africa"
+    },
+    "bangladesh": {
+      "name": "Bangladesh",
+      "code": "BD",
+      "gdp": 460,
+      "military": 5,
+      "population": 173,
+      "area": 147570,
+      "nuclear": false,
+      "continent": "Asia"
+    },
+    "kenya": {
+      "name": "Kenya",
+      "code": "KE",
+      "gdp": 113,
+      "military": 1,
+      "population": 55,
+      "area": 580367,
+      "nuclear": false,
+      "continent": "Africa"
+    },
+    "ethiopia": {
+      "name": "Ethiopia",
+      "code": "ET",
+      "gdp": 156,
+      "military": 1,
+      "population": 126,
+      "area": 1104300,
+      "nuclear": false,
+      "continent": "Africa"
+    },
+    "algeria": {
+      "name": "Algeria",
+      "code": "DZ",
+      "gdp": 195,
+      "military": 9,
+      "population": 45,
+      "area": 2381741,
+      "nuclear": false,
+      "continent": "Africa"
+    },
+    "iraq": {
+      "name": "Iraq",
+      "code": "IQ",
+      "gdp": 267,
+      "military": 7,
+      "population": 44,
+      "area": 438317,
+      "nuclear": false,
+      "continent": "Asia"
+    },
+    "croatia": {
+      "name": "Croatia",
+      "code": "HR",
+      "gdp": 82,
+      "military": 1,
+      "population": 4,
+      "area": 56594,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "serbia": {
+      "name": "Serbia",
+      "code": "RS",
+      "gdp": 75,
+      "military": 1,
+      "population": 7,
+      "area": 88361,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "luxembourg": {
+      "name": "Luxembourg",
+      "code": "LU",
+      "gdp": 87,
+      "military": 0.5,
+      "population": 0.66,
+      "area": 2586,
+      "nuclear": false,
+      "continent": "Europe"
+    },
+    "iceland": {
+      "name": "Iceland",
+      "code": "IS",
+      "gdp": 31,
+      "military": 0,
+      "population": 0.38,
+      "area": 103000,
+      "nuclear": false,
+      "continent": "Europe"
+    }
+  }
+}

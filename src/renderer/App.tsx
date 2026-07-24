@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { BoardState, Unit, BattleLog, Position, BOARD_CONFIG, SvgType, UnitAnimState, SlashEffect, DamageNumber, AttackLine } from '../types/index.js';
 import { runSimulation, createUnit, UNIT_TEMPLATES } from '../engine/index.js';
 import { UnitSvg } from './UnitSvgs.js';
+import { useScreenRecorder } from './useScreenRecorder.js';
 
 const UnitImage: React.FC<{ unit: Unit; size: number }> = ({ unit, size }) => {
   if (unit.imageUrl) {
@@ -39,7 +40,8 @@ function distributedPositions(count: number): Position[] {
   return positions;
 }
 
-export function App() {
+export function App({ onBack }: { onBack?: () => void } = {}) {
+  const { isRecording, startRecording, stopRecording } = useScreenRecorder('ffa');
   const [units, setUnits] = useState<Unit[]>([]);
   const [isBattling, setIsBattling] = useState(false);
   const [winner, setWinner] = useState<string | 'draw' | null>(null);
@@ -220,6 +222,18 @@ export function App() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 20, minHeight: '100vh' }}>
+      {onBack && (
+        <button
+          onClick={onBack}
+          style={{
+            alignSelf: 'flex-start', padding: '8px 16px', fontSize: 14,
+            background: 'transparent', border: '1px solid #444', borderRadius: 8,
+            cursor: 'pointer', color: '#888', letterSpacing: 1, marginBottom: 12,
+          }}
+        >
+          ← BACK
+        </button>
+      )}
       <h1 style={{ fontSize: 32, marginBottom: 8, letterSpacing: 2 }}>FFA BATTLE SIMULATOR</h1>
       <p style={{ color: '#888', marginBottom: 20, fontSize: 14 }}>Last unit standing wins</p>
 
@@ -383,6 +397,16 @@ export function App() {
         ) : (
           <button onClick={reset} style={{ padding: '12px 40px', fontSize: 18, fontWeight: 'bold', background: 'linear-gradient(135deg, #666, #444)', border: 'none', borderRadius: 8, cursor: 'pointer', color: '#fff', letterSpacing: 1 }}>
             RESET
+          </button>
+        )}
+
+        {!isRecording ? (
+          <button onClick={startRecording} style={{ padding: '12px 24px', fontSize: 16, fontWeight: 'bold', background: 'linear-gradient(135deg, #f87171, #ef4444)', border: 'none', borderRadius: 8, cursor: 'pointer', color: '#fff', letterSpacing: 1 }}>
+            ● REC
+          </button>
+        ) : (
+          <button onClick={stopRecording} style={{ padding: '12px 24px', fontSize: 16, fontWeight: 'bold', background: 'linear-gradient(135deg, #1f2937, #111827)', border: '2px solid #ef4444', borderRadius: 8, cursor: 'pointer', color: '#fff', letterSpacing: 1 }}>
+            ■ STOP & SAVE
           </button>
         )}
       </div>

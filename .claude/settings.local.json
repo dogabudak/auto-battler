@@ -11,7 +11,15 @@
       "Bash(pip3 install --break-system-packages Pillow 2>&1 | tail -3)",
       "Bash(python3 << 'PYEOF'\nfrom PIL import Image\n\nimg = Image.open\\(\"/Users/doga.budak/Documents/piarcha/auto-battler/public/2026_premier.png\"\\)\nw, h = img.size\nprint\\(f\"Image size: {w}x{h}\"\\)\n\ncols, rows = 5, 4\ncell_w = w / cols\ncell_h = h / rows\nprint\\(f\"Cell size: {cell_w:.1f}x{cell_h:.1f}\"\\)\n\nteams = [\n    \"arsenal\", \"aston_villa\", \"bournemouth\", \"brentford\", \"brighton\",\n    \"chelsea\", \"crystal_palace\", \"everton\", \"fulham\", \"ipswich\",\n    \"leicester\", \"liverpool\", \"man_city\", \"man_united\", \"newcastle\",\n    \"nott_forest\", \"southampton\", \"tottenham\", \"west_ham\", \"wolves\",\n]\n\nout_dir = \"/Users/doga.budak/Documents/piarcha/auto-battler/public/crests\"\n\nfor i, name in enumerate\\(teams\\):\n    col = i % cols\n    row = i // cols\n    left = int\\(col * cell_w\\)\n    top = int\\(row * cell_h\\)\n    right = int\\(\\(col + 1\\) * cell_w\\)\n    bottom = int\\(\\(row + 1\\) * cell_h\\)\n    \n    cell = img.crop\\(\\(left, top, right, bottom\\)\\)\n    \n    # Trim transparent padding to get just the crest\n    bbox = cell.getbbox\\(\\)\n    if bbox:\n        cropped = cell.crop\\(bbox\\)\n        # Resize to uniform 128x128 with padding to keep aspect ratio\n        cropped.thumbnail\\(\\(128, 128\\), Image.LANCZOS\\)\n        final = Image.new\\(\"RGBA\", \\(128, 128\\), \\(0, 0, 0, 0\\)\\)\n        paste_x = \\(128 - cropped.width\\) // 2\n        paste_y = \\(128 - cropped.height\\) // 2\n        final.paste\\(cropped, \\(paste_x, paste_y\\)\\)\n        final.save\\(f\"{out_dir}/{name}.png\"\\)\n        print\\(f\"  {name}.png  \\(cropped {bbox} -> {cropped.size}\\)\"\\)\n    else:\n        print\\(f\"  {name}.png  EMPTY CELL\"\\)\n\nprint\\(\"Done!\"\\)\nPYEOF)",
       "Bash(npx tsc --noEmit 2>&1 && npx vite build 2>&1 | tail -5)",
-      "Bash(npx tsc --noEmit 2>&1 && echo \"OK\")"
+      "Bash(npx tsc --noEmit 2>&1 && echo \"OK\")",
+      "Bash(chmod:*)",
+      "Bash(bash:*)",
+      "Bash(ls:*)",
+      "Bash(xargs:*)",
+      "Bash(jq:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"exit: $?\")"
     ]
   }
 }

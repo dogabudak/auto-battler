@@ -7,7 +7,7 @@ function Root() {
   const [mode, setMode] = useState<'menu' | 'classic' | 'ball'>('menu');
 
   if (mode === 'classic') {
-    return <App />;
+    return <App onBack={() => setMode('menu')} />;
   }
 
   if (mode === 'ball') {
