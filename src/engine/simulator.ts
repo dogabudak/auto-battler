@@ -1,4 +1,5 @@
-import { Unit, BoardState, Position, BattleLog, SimulationResult, BOARD_CONFIG } from '../types/index.js';
+import { Unit, BoardState, Position, BattleLog, SimulationResult, BoardBounds, BOARD_CONFIG } from '../types/index.js';
+import { AbilityTrigger, deriveAbilities, resolveAbilityAttack } from './abilities.js';
 
 const MAX_TICKS = 500;
 
@@ -8,8 +9,32 @@ export class BattleSimulator {
   private tick: number = 0;
   private targetMap: Map<string, string> = new Map(); // unitId -> targetId
 
+  /**
+   * Board bounds in tiles. Supplied by the caller because the grid is shaped to
+   * the selected export format — a 9:16 board is tall, a 16:9 board is wide.
+   */
+  private readonly bounds: BoardBounds;
+
+  constructor(bounds: BoardBounds = BOARD_CONFIG) {
+    this.bounds = bounds;
+  }
+
+  /**
+   * Keep a unit on the board. Clamps to `size - 1` because a unit is drawn as a
+   * one-tile box whose top-left is its position, so `size - 1` is the last
+   * position whose box still fits.
+   */
+  private clampToBoard(unit: Unit): void {
+    unit.x = Math.max(0, Math.min(this.bounds.width - 1, unit.x));
+    unit.y = Math.max(0, Math.min(this.bounds.height - 1, unit.y));
+  }
+
   private cloneUnit(unit: Unit): Unit {
-    return { ...unit };
+    return {
+      ...unit,
+      abilities: unit.abilities ?? deriveAbilities(unit),
+      spentAbilities: [],
+    };
   }
 
   private initializeBoard(state: BoardState): void {
@@ -77,8 +102,9 @@ export class BattleSimulator {
       const newX = unit.x + (dx / dist) * moveDist;
       const newY = unit.y + (dy / dist) * moveDist;
 
-      unit.x = Math.max(0, Math.min(BOARD_CONFIG.width - 1, newX));
-      unit.y = Math.max(0, Math.min(BOARD_CONFIG.height - 1, newY));
+      unit.x = newX;
+      unit.y = newY;
+      this.clampToBoard(unit);
 
       this.logMove(unit, { x: unit.x, y: unit.y });
     }
@@ -107,10 +133,8 @@ export class BattleSimulator {
           u2.x -= forceX;
           u2.y -= forceY;
           
-          u1.x = Math.max(0, Math.min(BOARD_CONFIG.width - 1, u1.x));
-          u1.y = Math.max(0, Math.min(BOARD_CONFIG.height - 1, u1.y));
-          u2.x = Math.max(0, Math.min(BOARD_CONFIG.width - 1, u2.x));
-          u2.y = Math.max(0, Math.min(BOARD_CONFIG.height - 1, u2.y));
+          this.clampToBoard(u1);
+          this.clampToBoard(u2);
 
           // Log the subtle push to keep the renderer in sync if they don't move themselves
           this.logMove(u1, { x: u1.x, y: u1.y });
@@ -122,14 +146,22 @@ export class BattleSimulator {
 
   private attack(attacker: Unit, target: Unit): void {
     const damageValues = [0, 1, 3];
-    const damage = damageValues[Math.floor(Math.random() * damageValues.length)];
-    this.logAttack(attacker, target, damage);
-    target.hp -= damage;
+    const baseDamage = damageValues[Math.floor(Math.random() * damageValues.length)];
+
+    const outcome = resolveAbilityAttack(attacker, target, baseDamage);
+
+    this.logAttack(attacker, target, outcome.damage);
+    target.hp -= outcome.damage;
     if (target.hp <= 0) {
       target.hp = 0;
       this.logDeath(target);
     }
-    attacker.cooldown = 1000 / attacker.attackSpeed;
+    for (const trigger of outcome.triggers) {
+      this.logAbility(trigger);
+    }
+
+    // BLITZ skips the cooldown for an instant follow-up.
+    attacker.cooldown = outcome.blitz ? 0 : 1000 / attacker.attackSpeed;
   }
 
   private processUnit(unit: Unit, hitThisTick: Set<string>): void {
@@ -165,6 +197,10 @@ export class BattleSimulator {
 
   private logDeath(unit: Unit) {
     this.log({ type: 'death', unitId: unit.id });
+  }
+
+  private logAbility(trigger: AbilityTrigger) {
+    this.log({ type: 'ability', ...trigger });
   }
 
   private checkWinner(): string | 'draw' | null {

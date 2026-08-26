@@ -83,7 +83,9 @@ for (const [key, country] of Object.entries(countryData.countries)) {
   const attackSpeed = calculateAttackSpeed(country.population, country.area);
 
   COUNTRY_TEMPLATES[key] = {
-    imageUrl: `/flags/${key}.svg`,
+    // Flags are named by ISO-3166 alpha-2 (circle-flags), e.g. "us.svg" — not
+    // by our country key ("usa"), which resolved to nothing for every country.
+    imageUrl: `/flags/${country.code.toLowerCase()}.svg`,
     hp,
     attack,
     range: 1,

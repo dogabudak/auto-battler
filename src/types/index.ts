@@ -10,6 +10,8 @@ export interface SpritePosition {
   row: number;
 }
 
+export type AbilityId = 'rage' | 'fortress' | 'blitz' | 'siphon' | 'execute';
+
 export interface Unit {
   id: string;
   x: number;
@@ -23,6 +25,9 @@ export interface Unit {
   svgType?: SvgType;
   imageUrl?: string;
   sprite?: SpritePosition;
+  abilities?: AbilityId[];
+  /** Abilities that have already fired and can't fire again (e.g. rage). */
+  spentAbilities?: AbilityId[];
 }
 
 export interface UnitTemplate {
@@ -33,6 +38,7 @@ export interface UnitTemplate {
   attack: number;
   range: number;
   attackSpeed: number;
+  abilities?: AbilityId[];
 }
 
 export interface BoardState {
@@ -45,6 +51,19 @@ export interface Grid {
   tileSize: number;
 }
 
+/**
+ * Board dimensions in tiles, as the simulators need them.
+ *
+ * The grid is no longer fixed: each export format (9:16, 1:1, 16:9) shapes the
+ * board to its frame, so movement clamping has to be told the bounds rather
+ * than reading a constant. See `src/renderer/exportFormats.ts`.
+ */
+export interface BoardBounds {
+  width: number;
+  height: number;
+}
+
+/** Fallback bounds for callers that don't select a format (tests, scripts). */
 export const BOARD_CONFIG: Grid = {
   width: 15,
   height: 14,
@@ -67,6 +86,31 @@ export interface UnitAnimState {
   attacking: boolean;
   attackDir: number;
   deathProgress: number; // 0 = alive, 1 = fully dead
+  /** Abilities whose buff is still running — drives the persistent aura. */
+  auras: AbilityId[];
+}
+
+/** One ability trigger, positioned and timed for the VFX layer. */
+export interface AbilityEffect {
+  id: string;
+  abilityId: AbilityId;
+  /** Where the effect plays — the unit the ability happened to. */
+  x: number;
+  y: number;
+  /** Origin for directional effects (e.g. siphon drains from here). */
+  fromX?: number;
+  fromY?: number;
+  /** Amount healed/blocked/dealt, shown as a floating number when set. */
+  value?: number;
+  startTime: number;
+}
+
+/** Big centre-screen banner for the loudest triggers. */
+export interface AbilityCallout {
+  id: string;
+  abilityId: AbilityId;
+  unitName: string;
+  startTime: number;
 }
 
 export interface SlashEffect {

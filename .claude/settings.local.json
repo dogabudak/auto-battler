@@ -19,7 +19,18 @@
       "Bash(jq:*)",
       "Bash(npm run build:*)",
       "Bash(npx tsc *)",
-      "Bash(echo \"exit: $?\")"
+      "Bash(echo \"exit: $?\")",
+      "Bash(perl -pi -e 's/alive: true, attacking: false, attackDir: 0, deathProgress: 0,/alive: true, attacking: false, attackDir: 0, deathProgress: 0, auras: [],/' src/renderer/BallApp.tsx src/renderer/App.tsx)",
+      "Bash(npm run *)",
+      "Bash(kill %1)",
+      "Bash(pkill -f \"vite\")",
+      "Bash(rm -f /tmp/ability-check.mjs)",
+      "Bash(grep *)",
+      "Bash(awk NR>=113 && NR<=144 *)",
+      "Bash(node *)",
+      "Bash(npm test *)",
+      "Bash(python3 -)",
+      "Bash(pkill -f vite)"
     ]
   }
 }
