@@ -155,6 +155,11 @@ export class BattleSimulator {
     if (target.hp <= 0) {
       target.hp = 0;
       this.logDeath(target);
+    } else {
+      // Retaliation: getting hit (or missed at) makes the target aggro onto
+      // its attacker, instead of continuing to trek toward whatever far-off
+      // random target it was originally assigned.
+      this.targetMap.set(target.id, attacker.id);
     }
     for (const trigger of outcome.triggers) {
       this.logAbility(trigger);

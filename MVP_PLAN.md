@@ -63,7 +63,10 @@ Generate engaging auto-battle videos featuring real-world entities (countries, p
 - [ ] Deterministic seed + shareable replay code
 
 ### 3.2 Special Abilities
-- [ ] Entity-type-specific abilities
+- [ ] Ultimate-ability framework: a rare, cooldown-gated move with its own trigger/resolution path, distinct from the on-hit procs in `abilities.ts` (RAGE/BLOCK/BLITZ/SIPHON/EXECUTE)
+- [ ] NUKE ultimate for nuclear-flagged countries (`nuclear` field in `countryStats.json`) — AOE damage to nearby units, mushroom-cloud VFX + screen flash
+- [ ] AIRSTRIKE ultimate for top-military-spend countries — jet flyover VFX, line/AOE bombing-run damage
+- [ ] Entity-type-specific abilities for other packs (e.g. football: red card / VAR review)
 - [ ] Passive bonuses based on entity characteristics
 
 ---
