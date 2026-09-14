@@ -34,12 +34,16 @@ const ROSTER_SIZES = [8, 12, 16, 20, 24];
 
 const ALL_GROUPS = '__all__';
 
+/** Beyond group/size/top-N: hand-pick the exact entities that enter the battle. */
+type PickMode = RosterMode | 'custom';
+
 export function BattleSetup({ onStart }: { onStart: (config: BattleConfig) => void }) {
   const [mode, setMode] = useState<BattleMode>('brawl');
   const [packId, setPackId] = useState<PackId>('countries');
   const [group, setGroup] = useState<string>(ALL_GROUPS);
-  const [rosterMode, setRosterMode] = useState<RosterMode>('top');
+  const [pickMode, setPickMode] = useState<PickMode>('top');
   const [size, setSize] = useState<number>(16);
+  const [customKeys, setCustomKeys] = useState<string[]>([]);
 
   const pack = getPack(packId);
   const groupNames = useMemo(() => getGroupNames(packId), [packId]);
@@ -47,29 +51,47 @@ export function BattleSetup({ onStart }: { onStart: (config: BattleConfig) => vo
   const { theme, selection: themeSelection, select: selectTheme } = useArenaTheme(packId);
   const { formatId, layout, select: selectFormat } = useExportFormat();
 
+  // Entities the "Custom" picker shows, narrowed by the group filter — the
+  // browsing list only, selections outside it are kept (lets a roster mix
+  // groups, e.g. a few from Europe plus a few from Asia).
+  const pickableKeys = useMemo(() => {
+    const keys = group === ALL_GROUPS
+      ? Object.keys(pack.templates)
+      : (pack.groups?.()[group] ?? []).filter(k => pack.templates[k]);
+    return [...keys].sort((a, b) =>
+      (pack.displayNames[a] ?? a).localeCompare(pack.displayNames[b] ?? b)
+    );
+  }, [pack, group]);
+
   // Recomputed on every control change so the preview is always what you get,
   // except for 'random' where Start re-draws.
-  const roster = useMemo(
-    () => buildRoster(packId, { size, group: group === ALL_GROUPS ? undefined : group, mode: rosterMode }),
-    [packId, size, group, rosterMode]
+  const autoRoster = useMemo(
+    () => buildRoster(packId, { size, group: group === ALL_GROUPS ? undefined : group, mode: pickMode === 'custom' ? 'top' : pickMode }),
+    [packId, size, group, pickMode]
   );
+  const roster = pickMode === 'custom' ? customKeys : autoRoster;
 
   const selectPack = (id: PackId) => {
     setPackId(id);
     setGroup(ALL_GROUPS);
     setSize(getPack(id).defaultRosterSize);
+    setCustomKeys([]);
   };
 
+  const toggleCustomKey = (key: string) => {
+    setCustomKeys(prev => prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]);
+  };
+
+  const canStart = roster.length >= 2;
+
   const start = () => {
-    onStart({
-      mode,
-      packId,
-      roster: buildRoster(packId, {
-        size,
-        group: group === ALL_GROUPS ? undefined : group,
-        mode: rosterMode,
-      }),
-    });
+    if (!canStart) return;
+    // 'random' redraws a fresh shuffle at start time rather than reusing the
+    // previewed roster; 'custom' and 'top' are exactly what's shown.
+    const finalRoster = pickMode === 'random'
+      ? buildRoster(packId, { size, group: group === ALL_GROUPS ? undefined : group, mode: 'random' })
+      : roster;
+    onStart({ mode, packId, roster: finalRoster });
   };
 
   return (
@@ -175,52 +197,103 @@ export function BattleSetup({ onStart }: { onStart: (config: BattleConfig) => vo
             </Field>
           )}
 
-          <Field label="Size">
-            <div style={{ display: 'flex', gap: 4 }}>
-              {ROSTER_SIZES.map(n => (
-                <Chip key={n} selected={n === size} onClick={() => setSize(n)}>{n}</Chip>
-              ))}
-            </div>
-          </Field>
+          {pickMode !== 'custom' && (
+            <Field label="Size">
+              <div style={{ display: 'flex', gap: 4 }}>
+                {ROSTER_SIZES.map(n => (
+                  <Chip key={n} selected={n === size} onClick={() => setSize(n)}>{n}</Chip>
+                ))}
+              </div>
+            </Field>
+          )}
 
           <Field label="Pick by">
             <div style={{ display: 'flex', gap: 4 }}>
-              <Chip selected={rosterMode === 'top'} onClick={() => setRosterMode('top')}>Strongest</Chip>
-              <Chip selected={rosterMode === 'random'} onClick={() => setRosterMode('random')}>Random</Chip>
+              <Chip selected={pickMode === 'top'} onClick={() => setPickMode('top')}>Strongest</Chip>
+              <Chip selected={pickMode === 'random'} onClick={() => setPickMode('random')}>Random</Chip>
+              <Chip selected={pickMode === 'custom'} onClick={() => setPickMode('custom')}>Custom</Chip>
             </div>
           </Field>
         </div>
       </Section>
 
-      <Section label={`Lineup — ${roster.length} entities`}>
-        <div style={{
-          display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center',
-          maxWidth: 760, minHeight: 64,
-        }}>
-          {roster.map(key => (
-            <div key={key} style={{ width: 74, textAlign: 'center' }}>
-              <EntityImage
-                imageUrl={pack.templates[key]?.imageUrl}
-                name={pack.displayNames[key] ?? key}
-                size={32}
-              />
-              <div style={{
-                fontSize: TYPE.size.xs - 1, color: COLORS.text.secondary, marginTop: SPACE.xs,
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-              }}>
-                {pack.displayNames[key] ?? key}
-              </div>
+      {pickMode === 'custom' ? (
+        <Section label={`Custom Picks — ${roster.length} selected`}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
+            <Chip selected={false} onClick={() => setCustomKeys(autoRoster)}>Prefill strongest {size}</Chip>
+            <Chip selected={false} onClick={() => setCustomKeys([])}>Clear</Chip>
+          </div>
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center',
+            maxWidth: 760, maxHeight: 320, overflowY: 'auto', padding: 4,
+          }}>
+            {pickableKeys.map(key => {
+              const selected = customKeys.includes(key);
+              const name = pack.displayNames[key] ?? key;
+              return (
+                <button
+                  key={key}
+                  onClick={() => toggleCustomKey(key)}
+                  style={{
+                    width: 74, padding: '6px 4px 8px', textAlign: 'center',
+                    background: selected ? COLORS.bg.selected : 'transparent',
+                    border: `2px solid ${selected ? COLORS.accent.blue : COLORS.border.subtle}`,
+                    borderRadius: 8, cursor: 'pointer',
+                  }}
+                >
+                  <EntityImage imageUrl={pack.templates[key]?.imageUrl} name={name} size={32} />
+                  <div style={{
+                    fontSize: TYPE.size.xs - 1,
+                    color: selected ? COLORS.text.onSelected : COLORS.text.secondary,
+                    marginTop: SPACE.xs,
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}>
+                    {name}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          {!canStart && (
+            <div style={{ fontSize: TYPE.size.sm, color: COLORS.accent.gold }}>
+              Pick at least 2 entities to start.
             </div>
-          ))}
-        </div>
-      </Section>
+          )}
+        </Section>
+      ) : (
+        <Section label={`Lineup — ${roster.length} entities`}>
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center',
+            maxWidth: 760, minHeight: 64,
+          }}>
+            {roster.map(key => (
+              <div key={key} style={{ width: 74, textAlign: 'center' }}>
+                <EntityImage
+                  imageUrl={pack.templates[key]?.imageUrl}
+                  name={pack.displayNames[key] ?? key}
+                  size={32}
+                />
+                <div style={{
+                  fontSize: TYPE.size.xs - 1, color: COLORS.text.secondary, marginTop: SPACE.xs,
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                }}>
+                  {pack.displayNames[key] ?? key}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
 
       <button
         onClick={start}
+        disabled={!canStart}
         style={{
           ...primaryButton(COLORS.accent.green, COLORS.accent.greenDeep),
           padding: '14px 56px', borderRadius: RADIUS.lg,
           letterSpacing: TYPE.tracking.wide,
+          opacity: canStart ? 1 : 0.4,
+          cursor: canStart ? 'pointer' : 'not-allowed',
         }}
       >
         START BATTLE

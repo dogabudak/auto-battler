@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Position } from '../types/index.js';
 import { ARENA_TYPE_RATIO } from './designTokens.js';
 import {
@@ -234,7 +234,13 @@ export function useExportFormat() {
 
   const select = useCallback((next: ExportFormatId) => setFormatId(next), []);
 
-  return { formatId, layout: getArenaLayout(formatId), select };
+  // Stable reference per formatId — callers memoize on `layout` (e.g. App's
+  // `initializeUnits`), and a fresh object every render made that dependency
+  // change every render, re-firing the reset effect and wiping battle state
+  // (position/HP) on every tick.
+  const layout = useMemo(() => getArenaLayout(formatId), [formatId]);
+
+  return { formatId, layout, select };
 }
 
 /** Chrome the preview has to share the window with, in screen px. */

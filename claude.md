@@ -17,6 +17,26 @@ The system simulates battles between entities (countries, politicians, football 
 
 ---
 
+## MVP_PLAN.md Conventions
+
+`MVP_PLAN.md` is a task list, not a design doc. Every line in it should be an
+actionable item someone can check off — not rationale, analysis, decision
+history, or "why this matters" narrative.
+
+- No status tables, gap analyses, or prose paragraphs explaining a section —
+  one short heading line is enough context.
+- No completed items — delete a task the moment it's done instead of marking
+  it `[x]`. Git history is the record of what shipped; this file is only what's
+  left.
+- No "decided against" items either — if something was considered and
+  rejected (e.g. 4K export, a config toggle that isn't worth building), delete
+  it rather than keeping a strikethrough explaining why not.
+- Keep each bullet to one line. A file path or mechanism name is fine context;
+  a justification for why the task matters is not — that belongs in the PR/commit,
+  not the plan.
+
+---
+
 ## Architecture
 
 ### Core Components
